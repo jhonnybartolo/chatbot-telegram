@@ -82,6 +82,7 @@ OPENWEATHER_API_KEY="cacc8f0179d599307293bd12477c2302"
 ### Acessar o bot
 
 O bot está disponível no Telegram pelo link:
+*Também é posivel procurar o bot no chat de telegram, colocando o nome "projetomodulo2_bot"
 
 👉 [https://t.me/projetomodulo2_bot](https://t.me/projetomodulo2_bot)
 
