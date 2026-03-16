@@ -14,6 +14,8 @@ O usuário envia uma mensagem no formato `Cidade,UF,BR` para o bot no Telegram. 
 | Bot responde | `🌤️ A temperatura em São Paulo é de 24°C.` |
 | Usuário envia cidade inválida | `Blablabla,XX,BR` |
 | Bot responde | `❌ Cidade não encontrada. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR).` |
+| Usuário envia formato errado | `São Paulo` |
+| Bot responde | `❌ Formato inválido. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR).` |
 
 ---
 
@@ -81,10 +83,11 @@ OPENWEATHER_API_KEY="cacc8f0179d599307293bd12477c2302"
 
 ### Acessar o bot
 
-O bot está disponível no Telegram pelo link:
-*Também é posivel procurar o bot no chat de telegram, colocando o nome "projetomodulo2_bot"
+O bot se chama **Temperatura Cidade Brasil** e está disponível no Telegram pelo link:
 
 👉 [https://t.me/projetomodulo2_bot](https://t.me/projetomodulo2_bot)
+
+Ou busque diretamente no Telegram por `@projetomodulo2_bot`
 
 ### Enviar uma cidade de teste
 
@@ -114,7 +117,7 @@ Curitiba,PR,BR
 
 ---
 
-**Teste 3 — Cidade inválida (teste de erro):**
+**Teste 3 — Cidade inválida (teste de erro da API):**
 
 ```
 Blablabla,XX,BR
@@ -123,21 +126,35 @@ Blablabla,XX,BR
 
 ---
 
+**Teste 4 — Formato inválido (teste de erro de formato):**
+
+```
+São Paulo
+```
+> ❌ Formato inválido. Use o formato Cidade,UF,BR (ex.: São Paulo,SP,BR).
+
+---
+
 ## 🔀 Estrutura do workflow
 
 ```
 Telegram Trigger
       ↓
-Edit Fields (formata a cidade → variável queue)
+Edit Fields (normaliza texto → variável queue)
       ↓
-HTTP Request (consulta OpenWeather)
-      ↓
-IF node (verifica se a resposta é válida)
-   ↙                    ↘
-true                   false
-  ↓                      ↓
-Code node            Telegram Send
-(extrai e            (mensagem de erro)
+IF1 node (formato válido? Cidade,UF,BR)
+   ↙                        ↘
+true                        false
+  ↓                           ↓
+HTTP Request             Telegram Send
+(consulta OpenWeather)   (erro de formato)
+  ↓
+IF2 node (main.temp exists?)
+   ↙                ↘
+true               false
+  ↓                  ↓
+Code node        Telegram Send
+(extrai e        (cidade não encontrada)
 formata temp.)
   ↓
 Telegram Send
@@ -151,11 +168,11 @@ Telegram Send
 | Nó | Tipo | Função |
 |---|---|---|
 | Telegram Trigger | Trigger | Recebe mensagens do usuário |
-| Edit Fields | Set | Captura e normaliza o texto na variável `queue` |
+| Edit Fields | Set | Normaliza o texto na variável `queue` |
+| IF1 | Condicional | Valida se o formato é `Cidade,UF,BR` |
 | HTTP Request | HTTP | Consulta a API OpenWeather |
-| IF | Condicional | Valida se a resposta contém temperatura |
+| IF2 | Condicional | Valida se a resposta contém temperatura |
 | Code in JavaScript | Code | Extrai e arredonda a temperatura |
 | Send a text message | Telegram | Envia a temperatura ao usuário |
-| Send a text message1 | Telegram | Envia mensagem de erro ao usuário |
-
----
+| Send a text message1 | Telegram | Envia erro de cidade não encontrada |
+| Send a text message2 | Telegram | Envia erro de formato inválido |
